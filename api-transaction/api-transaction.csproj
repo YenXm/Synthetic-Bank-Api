@@ -9,11 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="data-generator\.vscode\launch.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="data-generator\Lib\site-packages\numpy\.libs\libopenblas.FB5AE2TYXYH2IJRDKGDGQ3XBKLKTF43H.gfortran-win_amd64.dll" />
+    <Compile Remove="data-generator\**" />
+    <Content Remove="data-generator\**" />
+    <EmbeddedResource Remove="data-generator\**" />
+    <None Remove="data-generator\**" />
   </ItemGroup>
 
   <ItemGroup>

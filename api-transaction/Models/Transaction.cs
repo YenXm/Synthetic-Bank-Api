@@ -1,13 +1,12 @@
 namespace api_transaction.Models
 {
-    public class Transaction
+    public class Transaction : BaseModel
     {
-        public int Id { get; set; }
-        public int AccountId { get; set; }
-        public decimal Amount { get; set; }
-        public DateTime Date { get; set; }
+        public string Date { get; set; }
         public string Description { get; set; }
         public string Category { get; set; }
+        public int Amount { get; set; }
+        public int AccountId { get; set; }
         public string Tags { get; set; }
         public string Notes { get; set; }
         public bool IsReconciled { get; set; }
@@ -16,3 +15,5 @@ namespace api_transaction.Models
 
     }
 }
+
+
