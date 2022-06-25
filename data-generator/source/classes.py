@@ -6,53 +6,32 @@ import numpy as np
 from faker import Faker
 import pandas as pd
 
+person_id_tracker = 1
+account_id_tracker = 1
+transaction_id_tracker = 1
+
 
 class Transaction:
-    def __init__(self) -> None:
-        self.Id: int = None
-        self.Amount: int = None
-        self.Date: str = None
-        self.Description: str = None
-        self.Type: str = None
-        self.Category: str = None
-        self.AccountId: int = None
-        self.Tags: str = None
-        self.Notes: str = None
-        self.IsReconciled: bool = False
-        self.IsCleared: bool = False
+    def __init__(self, account_id, faker: Faker) -> None:
+        self.Id: int = self.init_id()
+        self.Amount: int = self.init_amount()
+        self.Date: str = faker.date_of().strftime("%Y-%m-%d")
+        self.Description: str = faker.sentence( nb_words=6, variable_nb_words=True, ext_word_list=None)
+        self.Category: str = faker.random_element(elements=['food', 'transport', 'entertainment', 'other', 'income'])
+        self.AccountId: int = account_id
+        self.Tags: str = faker.sentence( nb_words=6, variable_nb_words=True, ext_word_list=None)
+        self.Notes: str = faker.sentence( nb_words=6, variable_nb_words=True, ext_word_list=None)
+        self.IsReconciled: bool = faker.boolean()
+        self.IsCleared: bool = faker.boolean()
 
-    def set_id(self, id: int) -> None:
-        self.Id = id
-
-    def set_amount(self, amount: int) -> None:
-        self.Amount = amount
-
-    def set_date(self, date: datetime) -> None:
-        self.Date = date.strftime("%Y-%m-%d")
-
-    def set_description(self, description: str) -> None:
-        self.Description = description
-
-    def set_type(self, type: str) -> None:
-        self.Type = type
-
-    def set_category(self, category: str) -> None:
-        self.Category = category
-
-    def set_accountId(self, accountId: int) -> None:
-        self.AccountId = accountId
-
-    def set_tags(self, tags: str) -> None:
-        self.Tags = tags
-
-    def set_notes(self, notes: str) -> None:
-        self.Notes = notes
-
-    def set_is_reconciled(self, is_reconciled: bool) -> None:
-        self.IsReconciled = is_reconciled
-
-    def set_is_cleared(self, is_cleared: bool) -> None:
-        self.IsCleared = is_cleared
+    def init_id(self) -> int:
+        global transaction_id_tracker
+        self.Id = transaction_id_tracker
+        transaction_id_tracker = transaction_id_tracker + 1
+        
+    def init_amount(self, faker: Faker) -> None:
+        amount = faker.random_int(min=0, max=1000)
+        self.Amount = amount * 5 if self.Category == 'income' else -amount
 
     @staticmethod
     def calculate_transaction_total(transactions: OrderedDict) -> int:
@@ -60,47 +39,69 @@ class Transaction:
         total += sum([x["Amount"] for x in transactions])
         return total
 
+class Account:
+    def __init__(self, person_id, faker: Faker) -> None:
+        self.Id: int = self.init_id()
+        self.PersonId: int = person_id
+        self.Provider: str = faker.credit_card_provider()
+        self.CardNumber: str = faker.credit_card_number()
+        self.AccountType: str = faker.random_element(elements=['debit'])
+        self.StartingBalance: int = faker.random_int(min=0, max=10000)
+        self.Balance: int = self.StartingBalance
+    
+        self.Transactions: list = []
+
+    def init_id(self) -> int:
+        global account_id_tracker
+        self.Id = account_id_tracker
+        account_id_tracker = account_id_tracker + 1
+        
+    def add_transaction(self, transaction: Transaction) -> None:
+        self.Transactions.append(transaction.__dict__)
 
 class Person:
-    def __init__(self) -> None:
-        self.Id: int = None
-        self.LastName: str = None
-        self.FirstName: str = None
-        self.Phone: str = None
-        self.Email: str = None
-        
+    def __init__(self, faker: Faker) -> None:
+        self.Id: int = self.init_id()
+        self.FirstName: str = faker.first_name()
+        self.LastName: str = faker.last_name()
+        self.Email: str = faker.email()
+        self.Phone: str = faker.phone_number()
+        self.BirthDate: str = faker.date_of_birth().strftime("%Y-%m-%d")
+        self.Address: str = faker.address()
+        self.City: str = faker.city()
+        self.State: str = faker.state()
+        self.Zip: str = faker.zipcode()
+        self.Country: str = faker.country()
+        self.Company: str = faker.company()
+        self.JobTitle: str = faker.job()
+        self.CompanyDescription: str = faker.text()
+        self.CompanyDomain: str = faker.domain_name()
+
         self.Accounts: list = []
+
+    def init_id(self) -> int:
+        global person_id_tracker
+        self.Id = person_id_tracker
+        person_id_tracker = person_id_tracker + 1
 
     def get_full_name(self) -> str:
         return self.FirstName + " " + self.LastName
+    
+    def add_account(self, account: Account) -> None:
+        self.Accounts.append(account.__dict__)
 
 
-class Account:
-    def __init__(self) -> None:
-        self.Id: int = None
-        self.PersonId: int = None
-        self.Provider: str = None
-        self.CardNumber: str = None
-        self.CardType: str = None
-        self.CreditCap: int = None
-        self.StartingBalance: int = None
-        self.CurrentBalance: int = None
-        
-        self.Transactions: list = []
 
 
 class Generactor:
     def __init__(self) -> None:
-        self.IdTracker: int = 1
-        self.AccountIdTracker: int = 1
-        self.PersonIdTracker: int = 1
 
         locales = OrderedDict([
             ('en-US', 1),
         ])
 
         self.faker = Faker(locales)
-        
+
     def generate_data(self, count: int) -> list:
         people = []
         for _ in range(count):
@@ -108,82 +109,13 @@ class Generactor:
         return people
 
     def generate_person(self) -> Person:
-        person = Person()
-        person.Id = self.PersonIdTracker
-        self.PersonIdTracker += 1
-
-        person.LastName = self.faker.last_name()
-        person.FirstName = self.faker.first_name()
-        person.Phone = self.faker.phone_number()
-        person.Email = self.faker.email()
-
-        for (i, _) in enumerate(range(self.faker.random_int(min=1, max=5))):
-            person.Accounts.append(self.generate_account(person.Id).__dict__)
-
-        return person
-
+        return Person(self.faker)
+    
+    def generate_account(self, person: Person) -> Account:
+        return Account(person.Id, self.faker)
+    
     def generate_transaction(self, account: Account) -> Transaction:
-        transaction = Transaction()
-        transaction.set_id(self.IdTracker)
-        transaction.set_accountId(account.Id)
-        self.IdTracker += 1
-
-        transaction.set_amount(self.generate_amount())
-        transaction.set_date(self.generate_date())
-        transaction.set_description(self.generate_description())
-        transaction.set_notes(self.generate_description())
-        transaction.set_type(self.generate_type())
-        transaction.set_category(self.generate_category())
-        transaction.set_tags(self.generate_description())
-        transaction.set_is_reconciled(self.faker.random_int(min=0, max=1) == 1)
-        transaction.set_is_cleared(self.faker.random_int(min=0, max=1) == 1)
-
-        return transaction
-
-
-    def generate_category(self):
-        return self.faker.random_element(
-            elements=['food', 'transport', 'entertainment', 'other', 'transfer', 'income'])
-
-    def generate_type(self):
-        return self.faker.random_element(elements=['credit', 'debit'])
-
-    def generate_description(self):
-        return self.faker.sentence()
-
-    def generate_date(self):
-        return self.faker.date_time_this_year()
-
-    def generate_amount(self):
-        amount = self.faker.random_int(min=1, max=500)
-
-        return amount if np.random.randint(0, 4) == 0 or 1 or 2 else -amount
-
-    def generate_account(self, personId: int) -> Account:
-        account = Account()
-        account.Id: int = self.AccountIdTracker
-        self.AccountIdTracker += 1
-        account.PersonId: int = personId
-
-        account.Provider = self.faker.credit_card_provider()
-        # TODO: add more type
-        account.CardType = self.faker.random_element(elements=['debit'])
-        account.CardNumber = self.faker.credit_card_number()
-
-        account.StartingBalance = self.faker.random_int(min=0, max=10000)
-
-        account.Transactions = self.generate_multiple_transaction(
-            account, self.faker.random_int(min=1, max=15))
-
-        account.CurrentBalance = account.StartingBalance + \
-            Transaction.calculate_transaction_total(account.Transactions)
-        return account
-
-    def generate_multiple_transaction(self, account: Account, count: int) -> OrderedDict:
-        transactions = []
-        for i in range(count):
-            transactions.append(self.generate_transaction(account).__dict__)
-        return transactions
+        return Transaction(account.Id, self.faker)
 
 
 # test = Generactor()

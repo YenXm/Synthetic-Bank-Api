@@ -123,10 +123,6 @@ namespace api_transaction.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
@@ -136,24 +132,20 @@ namespace api_transaction.Migrations
 
             modelBuilder.Entity("api_transaction.Models.Account", b =>
                 {
-                    b.HasOne("api_transaction.Models.Person", "Person")
+                    b.HasOne("api_transaction.Models.Person", null)
                         .WithMany("Accounts")
                         .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("api_transaction.Models.Transaction", b =>
                 {
-                    b.HasOne("api_transaction.Models.Account", "Account")
+                    b.HasOne("api_transaction.Models.Account", null)
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("api_transaction.Models.Account", b =>
