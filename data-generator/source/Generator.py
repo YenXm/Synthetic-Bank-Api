@@ -5,7 +5,7 @@ from faker import Faker
 import os
 import requests
 
-AMOUNT_OF_PERSON = 50
+AMOUNT_OF_PERSON = 2000
 API_ROUTE = 'https://localhost:44389/api/DataGenerator/ImportJsonData'
 API_ROUTE_FOR_ID = 'https://localhost:44389/api/DataGenerator/GetNextId'
 
@@ -142,7 +142,6 @@ def repair_json(person_dict: dict) -> None:
 def main():
 
     response = json.decoder.JSONDecoder().decode(requests.get(API_ROUTE_FOR_ID, verify=False).content.decode('utf-8'))
-    print("response: ", response)
     global person_id_tracker
     global account_id_tracker
     global transaction_id_tracker

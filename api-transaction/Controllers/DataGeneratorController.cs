@@ -31,7 +31,6 @@ namespace api_transaction.Controllers
         {
             _context.Persons.AddRange(json);
             _context.SaveChanges();
-            Console.WriteLine("test");
             return;
         }
     }
