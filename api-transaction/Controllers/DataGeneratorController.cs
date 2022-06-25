@@ -16,13 +16,22 @@ namespace api_transaction.Controllers
             _context = context;
         }
 
-        [HttpPost("ImportJsonData")]
-        public async void PostGeneratedData([FromBody] Person[] data)
+        [HttpGet("GetNextId")]
+        public async Task<IActionResult> GetNextId()
         {
-            var test = PythonService.run_cmd();
+            var accountId = _context.Accounts.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+            var personId = _context.Persons.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+            var transactionId = _context.Transactions.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+            return new JsonResult(new { transactionId, accountId, personId });
 
-            //_context.Persons.AddRange(data);
-            //_context.SaveChanges();
+        }
+
+        [HttpPost("ImportJsonData")]
+        public async void PostGeneratedData([FromBody] Person[] json)
+        {
+            _context.Persons.AddRange(json);
+            _context.SaveChanges();
+            Console.WriteLine("test");
             return;
         }
     }

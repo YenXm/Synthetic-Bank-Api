@@ -1,11 +1,13 @@
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 import json
 from faker import Faker
-import constant
+import os
+import requests
 
-AMOUNT_OF_PERSON = 10
-API_ROUTE = 'https://localhost:7271/api/DataGenerator/ImportJsonData'
+AMOUNT_OF_PERSON = 50
+API_ROUTE = 'https://localhost:44389/api/DataGenerator/ImportJsonData'
+API_ROUTE_FOR_ID = 'https://localhost:44389/api/DataGenerator/GetNextId'
 
 person_id_tracker = 1
 account_id_tracker = 1
@@ -131,16 +133,35 @@ class Generactor:
     def generate_transaction(self, account: Account) -> Transaction:
         return Transaction(account.Id, self.faker)
 
+def repair_json(person_dict: dict) -> None:
+    with open('data.json', 'w') as f:
+        f.write(json.dumps([x for x in person_dict], separators=(',', ':'), ))
+    with open('data.json', 'r') as f:
+        return f.read()
+
 def main():
 
-    generator = Generactor()
+    response = json.decoder.JSONDecoder().decode(requests.get(API_ROUTE_FOR_ID, verify=False).content.decode('utf-8'))
+    print("response: ", response)
+    global person_id_tracker
+    global account_id_tracker
+    global transaction_id_tracker
+    
+    person_id_tracker = response["personId"]
+    account_id_tracker = response["accountId"]
+    transaction_id_tracker = response["transactionId"]
+    
+    print("person_id_tracker: ", person_id_tracker)
+    print("account_id_tracker: ", account_id_tracker)
+    print("transaction_id_tracker: ", transaction_id_tracker)
 
-    person_dict: dict = generator.generate_data(AMOUNT_OF_PERSON)
+    person_dict: dict = Generactor().generate_data(AMOUNT_OF_PERSON)
 
-    json_string = json.dumps([x for x in person_dict])
-
-    with open('data.json', 'w') as f:
-        f.write(json_string)
+    json_string = repair_json(person_dict)
+        
+    os.remove('data.json')
+        
+    requests.post(API_ROUTE, data=json_string, verify=False , headers={'Content-Type': 'application/json'})
 
 
 if __name__ == '__main__':
