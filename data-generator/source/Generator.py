@@ -4,6 +4,8 @@ import json
 from faker import Faker
 import constant
 
+AMOUNT_OF_PERSON = 10
+API_ROUTE = 'https://localhost:7271/api/DataGenerator/ImportJsonData'
 
 person_id_tracker = 1
 account_id_tracker = 1
@@ -129,25 +131,17 @@ class Generactor:
     def generate_transaction(self, account: Account) -> Transaction:
         return Transaction(account.Id, self.faker)
 
+def main():
 
-generator = Generactor()
+    generator = Generactor()
 
-person_dict: dict = generator.generate_data(constant.AMOUNT_OF_PERSON)
+    person_dict: dict = generator.generate_data(AMOUNT_OF_PERSON)
 
-json_string = json.dumps([x for x in person_dict])
+    json_string = json.dumps([x for x in person_dict])
 
-with open('data.json', 'w') as f:
-    f.write(json_string)
+    with open('data.json', 'w') as f:
+        f.write(json_string)
 
-# test = Generactor()
 
-# df = pd.DataFrame(columns=['id', 'personId', 'provider', 'card_number',
-#                   'card_type', 'credit_cap', 'starting_balance', 'current_balance'])
-# print(df)
-
-# dict = test.generate_account(1).__dict__
-# tett = dict.pop('transactions')
-
-# print(pd.DataFrame(dict, index=[0]))
-
-# print(test.generate_person().__dict__)
+if __name__ == '__main__':
+    main()
